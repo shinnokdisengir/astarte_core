@@ -19,13 +19,13 @@
 defmodule Astarte.Core.Triggers.PolicyTest do
   use ExUnit.Case
   alias Astarte.Core.Triggers.Policy
-  alias Astarte.Core.Triggers.Policy.Handler
   alias Astarte.Core.Triggers.Policy.ErrorKeyword
   alias Astarte.Core.Triggers.Policy.ErrorRange
-  alias Astarte.Core.Triggers.PolicyProtobuf.Policy, as: PolicyProto
-  alias Astarte.Core.Triggers.PolicyProtobuf.Handler, as: HandlerProto
+  alias Astarte.Core.Triggers.Policy.Handler
   alias Astarte.Core.Triggers.PolicyProtobuf.ErrorKeyword, as: ErrorKeywordProto
   alias Astarte.Core.Triggers.PolicyProtobuf.ErrorRange, as: ErrorRangeProto
+  alias Astarte.Core.Triggers.PolicyProtobuf.Handler, as: HandlerProto
+  alias Astarte.Core.Triggers.PolicyProtobuf.Policy, as: PolicyProto
 
   @a_policy """
     {
@@ -321,5 +321,23 @@ defmodule Astarte.Core.Triggers.PolicyTest do
     {:ok, _policy} =
       Policy.changeset(%Policy{}, params)
       |> Ecto.Changeset.apply_action(:insert)
+  end
+
+  test "from_policy_proto/1 preserves non-zero event_ttl" do
+    policy = %Policy{
+      name: "ttlpolicy",
+      maximum_capacity: 100,
+      error_handlers: [
+        %Handler{on: %ErrorKeyword{keyword: "any_error"}, strategy: "discard"}
+      ],
+      event_ttl: 3600
+    }
+
+    proto = Policy.to_policy_proto(policy)
+    assert {:ok, %Policy{event_ttl: 3600}} = Policy.from_policy_proto(proto)
+  end
+
+  test "from_policy_proto!/1 raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> Policy.from_policy_proto!(nil) end
   end
 end

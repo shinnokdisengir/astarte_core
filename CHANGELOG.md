@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Add required flag for mappings of object aggregated interfaces
 
+## [1.3.0] - 2026-04-30
+
+## [1.3.0-rc.2] - 2026-04-08
+
 ## [1.3.0-rc.1] - 2026-01-23
 
 ### Fixed
@@ -29,14 +33,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add events for device deletion started and finished.
 - Add event for device registration.
 
+## [1.2.2-rc.0] - 2026-04-08
+
 ## [1.2.1] - 2026-03-06
 
 ### Fixed
+
 - [astarte_realm_management] Insufficient validation for conflicting options in interface aggregate mappings
   [#1072](https://github.com/astarte-platform/astarte/issues/1072)
 
 ## [1.2.1-rc.0] - 2025-08-22
+
 ### Added
+
 - Allow `to_int` in custom enum types to be called with valid integers
 - Allow `from_int` in custom enum types to be called with valid atoms
 - Expose a custom `@type` for all structs

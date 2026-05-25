@@ -68,13 +68,16 @@ defmodule Astarte.Core.Mapping.ValueTypeTest do
 
     longbin =
       Stream.cycle([<<42>>])
-      |> Enum.take(65537)
+      |> Enum.take(65_537)
       |> IO.iodata_to_binary()
 
     assert ValueType.validate_value(:binaryblob, {0, longbin}) ==
              {:error, :value_size_exceeded}
 
-    assert ValueType.validate_value(:binaryblob, %Cyanide.Binary{subtype: :generic, data: longbin}) ==
+    assert ValueType.validate_value(
+             :binaryblob,
+             %Cyanide.Binary{subtype: :generic, data: longbin}
+           ) ==
              {:error, :value_size_exceeded}
 
     assert ValueType.validate_value(:datetime, 22.3) == {:error, :unexpected_value_type}
@@ -100,5 +103,16 @@ defmodule Astarte.Core.Mapping.ValueTypeTest do
 
     assert ValueType.validate_value(:datetimearray, [1_538_131_554_304, false]) ==
              {:error, :unexpected_value_type}
+  end
+
+  test "size-exceeded paths return error" do
+    long_string = String.duplicate("a", 65_537)
+    assert ValueType.validate_value(:string, long_string) == {:error, :value_size_exceeded}
+
+    long_binary = :binary.copy(<<0>>, 65_537)
+    assert ValueType.validate_value(:binaryblob, long_binary) == {:error, :value_size_exceeded}
+
+    long_list = Enum.to_list(1..1025)
+    assert ValueType.validate_value(:integerarray, long_list) == {:error, :value_size_exceeded}
   end
 end
