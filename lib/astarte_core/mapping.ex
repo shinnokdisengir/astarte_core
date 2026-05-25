@@ -46,7 +46,8 @@ defmodule Astarte.Core.Mapping do
     :description,
     :doc,
     :path,
-    :required
+    :required,
+    :encrypted
     | @required_fields
   ]
 
@@ -66,6 +67,7 @@ defmodule Astarte.Core.Mapping do
     field :endpoint_id, :binary
     field :interface_id, :binary
     field :required, :boolean, default: false
+    field :encrypted, :boolean, default: false
     # Legacy support
     field :path, :string, virtual: true
     # Different input naming
@@ -187,7 +189,8 @@ defmodule Astarte.Core.Mapping do
       explicit_timestamp: explicit_timestamp,
       endpoint_id: endpoint_id,
       interface_id: interface_id,
-      required: required
+      required: required,
+      encrypted: encrypted
     } = db_result
 
     database_retention_policy =
@@ -212,10 +215,12 @@ defmodule Astarte.Core.Mapping do
       interface_id: interface_id,
       doc: doc,
       description: description,
-      required: Kernel.||(required, false)
+      required: Kernel.||(required, false),
+      encrypted: Kernel.||(encrypted, false)
     }
   end
 
+  # validates the field is not set if the interface type does not support it
   defp validate_not_set_unless(changeset, field, param, values) do
     if Enum.member?(values, param) do
       changeset
@@ -263,7 +268,8 @@ defmodule Astarte.Core.Mapping do
         explicit_timestamp: explicit_timestamp,
         description: description,
         doc: doc,
-        required: required
+        required: required,
+        encrypted: encrypted
       } = mapping
 
       %{
@@ -280,6 +286,7 @@ defmodule Astarte.Core.Mapping do
       |> add_key_if_not_nil(:description, description)
       |> add_key_if_not_nil(:doc, doc)
       |> add_key_if_not_default(:required, required, false)
+      |> add_key_if_not_default(:encrypted, encrypted, false)
       |> Jason.Encoder.Map.encode(options)
     end
 

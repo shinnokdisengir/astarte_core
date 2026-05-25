@@ -161,16 +161,9 @@ defmodule Astarte.Core.Mapping.ValueType do
   def validate_value(:boolean, v) when is_boolean(v), do: :ok
   def validate_value(:longinteger, v) when is_integer(v) and abs(v) <= 0x7FFFFFFFFFFFFFFF, do: :ok
   def validate_value(:string, v) when is_binary(v), do: validate_string_value(v)
-  def validate_value(:binaryblob, v) when is_binary(v), do: validate_blob_size(v)
-
-  def validate_value(:binaryblob, %Cyanide.Binary{data: bin}) when is_binary(bin),
-    do: validate_blob_size(bin)
-
-  def validate_value(:binaryblob, {_subtype, bin}) when is_binary(bin),
-    do: validate_blob_size(bin)
-
   def validate_value(:datetime, %DateTime{}), do: :ok
   def validate_value(:datetime, v) when is_integer(v), do: :ok
+  def validate_value(:binaryblob, v), do: validate_blob_value(v)
   def validate_value(type, v) when is_list(v), do: validate_array_type(type, v)
   def validate_value(_type, _value), do: {:error, :unexpected_value_type}
 
@@ -179,6 +172,15 @@ defmodule Astarte.Core.Mapping.ValueType do
       not String.valid?(v) -> {:error, :unexpected_value_type}
       byte_size(v) > @string_size -> {:error, :value_size_exceeded}
       true -> :ok
+    end
+  end
+
+  defp validate_blob_value(v) do
+    case v do
+      v when is_binary(v) -> validate_blob_size(v)
+      %Cyanide.Binary{data: bin} -> validate_blob_size(bin)
+      {_subtype, bin} -> validate_blob_size(bin)
+      _ -> {:error, :unexpected_value_type}
     end
   end
 

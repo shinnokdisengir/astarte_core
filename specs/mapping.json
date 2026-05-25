@@ -78,6 +78,11 @@
     "doc": {
       "type": "string",
       "description": "A string containing documentation that will be injected in the generated client code."
+    },
+    "encrypted": {
+      "type": "boolean",
+      "default": false,
+      "description": "If set, configures all data exchanged on this endpoint to be encrypted both in transit and in storage."
     }
   },
   "required": ["endpoint", "type"]

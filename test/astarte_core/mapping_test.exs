@@ -252,6 +252,74 @@ defmodule Astarte.Core.MappingTest do
              Mapping.changeset(%Mapping{}, params, opts)
   end
 
+  test "encrypted flag defaults to false" do
+    opts = opts_fixture()
+
+    params = %{
+      "endpoint" => "/valid",
+      "type" => "string"
+    }
+
+    changeset = Mapping.changeset(%Mapping{}, params, opts)
+    {:ok, mapping} = Ecto.Changeset.apply_action(changeset, :insert)
+    assert %Mapping{encrypted: false} = mapping
+  end
+
+  test "encrypted flag with invalid value is rejected" do
+    opts = opts_fixture()
+
+    params = %{
+      "endpoint" => "/valid",
+      "type" => "string",
+      "encrypted" => "not_a_boolean"
+    }
+
+    assert %Ecto.Changeset{valid?: false, errors: [encrypted: _]} =
+             Mapping.changeset(%Mapping{}, params, opts)
+  end
+
+  test "encrypted flag can be set to true in object datastream endpoints" do
+    opts = opts_fixture()
+
+    params = %{
+      "endpoint" => "/valid",
+      "type" => "string",
+      "encrypted" => true
+    }
+
+    changeset = Mapping.changeset(%Mapping{}, params, opts)
+    {:ok, mapping} = Ecto.Changeset.apply_action(changeset, :insert)
+    assert %Mapping{encrypted: true} = mapping
+  end
+
+  test "encrypted flag can be set to true in individual datastream endpoints" do
+    opts = opts_fixture() |> Keyword.put(:interface_aggregation, :individual)
+
+    params = %{
+      "endpoint" => "/valid",
+      "type" => "string",
+      "encrypted" => true
+    }
+
+    changeset = Mapping.changeset(%Mapping{}, params, opts)
+    {:ok, mapping} = Ecto.Changeset.apply_action(changeset, :insert)
+    assert %Mapping{encrypted: true} = mapping
+  end
+
+  test "encrypted flag can be set to true in properties endpoints" do
+    opts = opts_fixture() |> Keyword.put(:interface_type, :properties)
+
+    params = %{
+      "endpoint" => "/valid",
+      "type" => "string",
+      "encrypted" => true
+    }
+
+    changeset = Mapping.changeset(%Mapping{}, params, opts)
+    {:ok, mapping} = Ecto.Changeset.apply_action(changeset, :insert)
+    assert %Mapping{encrypted: true} = mapping
+  end
+
   test "mapping from legacy database result" do
     legacy_result = [
       endpoint: "/test",
@@ -268,7 +336,8 @@ defmodule Astarte.Core.MappingTest do
       explicit_timestamp: true,
       endpoint_id: <<24, 101, 36, 39, 201, 240, 51, 175, 45, 122, 166, 194, 132, 91, 176, 154>>,
       interface_id: <<3, 203, 231, 42, 212, 254, 30, 12, 159, 114, 187, 196, 29, 30, 5, 219>>,
-      required: nil
+      required: nil,
+      encrypted: nil
     ]
 
     expected_mapping = %Mapping{
@@ -285,7 +354,8 @@ defmodule Astarte.Core.MappingTest do
       doc: nil,
       endpoint_id: <<24, 101, 36, 39, 201, 240, 51, 175, 45, 122, 166, 194, 132, 91, 176, 154>>,
       interface_id: <<3, 203, 231, 42, 212, 254, 30, 12, 159, 114, 187, 196, 29, 30, 5, 219>>,
-      required: false
+      required: false,
+      encrypted: false
     }
 
     assert Mapping.from_db_result!(legacy_result) == expected_mapping
